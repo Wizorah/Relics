@@ -7,11 +7,12 @@ use pocketmine\item\Item;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\VersionInfo;
 
-final class DummyTile extends Spawnable
+abstract class DummyTile extends Spawnable
 {
+    public static string $CLASS;
     protected ?CompoundTag $nbt = null;
 
-    protected function addAdditionalSpawnData(CompoundTag $nbt): void
+    protected function additionalSpawnData(CompoundTag $nbt): void
     {
         $this->writeSaveData($nbt); // IDK which tags affect appearance, so just send the whole thing :P
         // can't override getSpawnCompound()... override id here instead

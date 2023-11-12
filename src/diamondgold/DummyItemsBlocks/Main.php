@@ -10,6 +10,8 @@ use diamondgold\DummyItemsBlocks\item\horn\GoatHornType;
 use diamondgold\DummyItemsBlocks\item\horn\GoatHornTypeIdMap;
 use diamondgold\DummyItemsBlocks\item\ItemPlacedAsBlock;
 use diamondgold\DummyItemsBlocks\tile\DummyTile;
+use diamondgold\DummyItemsBlocks\tile\NGDummyTiles;
+use diamondgold\DummyItemsBlocks\tile\PMDummyTiles;
 use diamondgold\DummyItemsBlocks\tile\TileNames;
 use diamondgold\DummyItemsBlocks\util\BlockStateRegistration;
 use diamondgold\DummyItemsBlocks\util\DummyBlocks;
@@ -50,6 +52,7 @@ use pocketmine\item\SplashPotion;
 use pocketmine\item\StringToItemParser;
 use pocketmine\item\VanillaItems;
 use pocketmine\network\mcpe\convert\TypeConverter;
+use pocketmine\network\mcpe\protocol\ProtocolInfo;
 use pocketmine\player\Player;
 use pocketmine\plugin\DisablePluginException;
 use pocketmine\plugin\PluginBase;
@@ -59,6 +62,7 @@ use pocketmine\utils\ConfigLoadException;
 use pocketmine\world\format\io\GlobalBlockStateHandlers;
 use pocketmine\world\format\io\GlobalItemDataHandlers;
 use Throwable;
+use function defined;
 
 final class Main extends PluginBase
 {
@@ -99,6 +103,7 @@ final class Main extends PluginBase
 
     protected function onEnable(): void
     {
+        DummyTile::$CLASS = defined(ProtocolInfo::class . "::ACCEPTED_PROTOCOL") ? NGDummyTiles::class : PMDummyTiles::class;
         $this->saveDefaultConfig();
         $config = $this->getConfig();
         //$config->set("blocks", ReflectionHelper::BlockTypeNames());
@@ -317,6 +322,7 @@ final class Main extends PluginBase
 
                 public function onRun(): void
                 {
+                    DummyTile::$CLASS = defined(ProtocolInfo::class . "::ACCEPTED_PROTOCOL") ? NGDummyTiles::class : PMDummyTiles::class;
                     /** @var string[] $items */
                     $items = igbinary_unserialize($this->itemsSerialized);
                     /** @var string[] $blocks */
@@ -894,6 +900,6 @@ final class Main extends PluginBase
                 unset($tiles[$name]);
             }
         }
-        TileFactory::getInstance()->register(DummyTile::class, array_keys($tiles));
+        TileFactory::getInstance()->register(DummyTile::$CLASS, array_keys($tiles));
     }
 }
