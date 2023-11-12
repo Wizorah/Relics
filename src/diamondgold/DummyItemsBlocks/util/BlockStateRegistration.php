@@ -301,7 +301,7 @@ final class BlockStateRegistration
 
     public static function BeeHive(string $id): void
     {
-        $block = new BeeHive(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::class), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant()));
+        $block = new BeeHive(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::$CLASS), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant()));
         self::register($block, [$id]);
 
         GlobalBlockStateHandlers::getDeserializer()->map($id,
@@ -335,7 +335,7 @@ final class BlockStateRegistration
     public static function CalibratedSculkSensor(): void
     {
         $id = BlockTypeNames::CALIBRATED_SCULK_SENSOR;
-        $block = new CalibratedSculkSensor(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::class), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant()));
+        $block = new CalibratedSculkSensor(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::$CLASS), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant()));
         self::register($block, [$id]);
 
         GlobalBlockStateHandlers::getDeserializer()->map($id,
@@ -353,7 +353,7 @@ final class BlockStateRegistration
     // obsolete when merged https://github.com/pmmp/PocketMine-MP/pull/4696
     public static function Campfire(string $id): void
     {
-        $block = new Campfire(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::class), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant()));
+        $block = new Campfire(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::$CLASS), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant()));
         self::register($block, [$id . '_block'], false);
 
         GlobalBlockStateHandlers::getDeserializer()->map($id,
@@ -386,7 +386,7 @@ final class BlockStateRegistration
 
     public static function CommandBlock(string $id): void
     {
-        $block = new CommandBlock(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::class), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::indestructible()));
+        $block = new CommandBlock(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::$CLASS), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::indestructible()));
         self::register($block, [$id]);
 
         GlobalBlockStateHandlers::getDeserializer()->map($id,
@@ -446,7 +446,7 @@ final class BlockStateRegistration
     public static function Crafter(): void
     {
         $id = BlockTypeNames::CRAFTER;
-        $block = new Crafter(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::class), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant()));
+        $block = new Crafter(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::$CLASS), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant()));
         self::register($block, [$id]);
 
         GlobalBlockStateHandlers::getDeserializer()->map($id,
@@ -480,7 +480,7 @@ final class BlockStateRegistration
     public static function DecoratedPot(): void
     {
         $id = BlockTypeNames::DECORATED_POT;
-        $block = new DecoratedPot(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::class), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant()));
+        $block = new DecoratedPot(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::$CLASS), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant()));
         self::register($block, [$id]);
 
         GlobalBlockStateHandlers::getDeserializer()->map($id,
@@ -495,7 +495,7 @@ final class BlockStateRegistration
 
     public static function Dispenser(string $id): void
     {
-        $block = new Dispenser(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::class), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant()));
+        $block = new Dispenser(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::$CLASS), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant()));
         self::register($block, [$id]);
 
         GlobalBlockStateHandlers::getDeserializer()->map($id,
@@ -531,7 +531,7 @@ final class BlockStateRegistration
     // obsolete when merged https://github.com/pmmp/PocketMine-MP/pull/6013
     public static function HangingSign(string $id): void
     {
-        $block = new HangingSign(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::class), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant()));
+        $block = new HangingSign(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::$CLASS), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant()));
         self::register($block, [$id . '_block'], false);
 
         GlobalBlockStateHandlers::getDeserializer()->map($id,
@@ -630,7 +630,7 @@ final class BlockStateRegistration
 
     public static function Piston(string $id): void
     {
-        $block = new Piston(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::class), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant()));
+        $block = new Piston(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::$CLASS), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant()));
         self::register($block, [$id]);
 
         GlobalBlockStateHandlers::getDeserializer()->map($id,
@@ -705,7 +705,7 @@ final class BlockStateRegistration
     public static function SculkCatalyst(): void
     {
         $id = BlockTypeNames::SCULK_CATALYST;
-        $block = new SculkCatalyst(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::class), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant()));
+        $block = new SculkCatalyst(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::$CLASS), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant()));
         self::register($block, [$id]);
 
         GlobalBlockStateHandlers::getDeserializer()->map($id,
@@ -721,7 +721,7 @@ final class BlockStateRegistration
     public static function SculkSensor(): void
     {
         $id = BlockTypeNames::SCULK_SENSOR;
-        $block = new SculkSensor(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::class), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant()));
+        $block = new SculkSensor(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::$CLASS), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant()));
         self::register($block, [$id]);
 
         GlobalBlockStateHandlers::getDeserializer()->map($id,
@@ -737,7 +737,7 @@ final class BlockStateRegistration
     public static function SculkShrieker(): void
     {
         $id = BlockTypeNames::SCULK_SHRIEKER;
-        $block = new SculkShrieker(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::class), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant()));
+        $block = new SculkShrieker(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::$CLASS), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant()));
         self::register($block, [$id]);
 
         GlobalBlockStateHandlers::getDeserializer()->map($id,
@@ -798,7 +798,7 @@ final class BlockStateRegistration
     public static function StructureBlock(): void
     {
         $id = BlockTypeNames::STRUCTURE_BLOCK;
-        $block = new StructureBlock(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::class), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::indestructible()));
+        $block = new StructureBlock(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::$CLASS), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::indestructible()));
         self::register($block, [$id]);
 
         GlobalBlockStateHandlers::getDeserializer()->map($id,
@@ -848,7 +848,7 @@ final class BlockStateRegistration
             $tags = [];
         }
         // Note: does not implement Fallable nor use the FallableTrait
-        $block = new SuspiciousFallable(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::class), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant(), $tags));
+        $block = new SuspiciousFallable(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::$CLASS), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant(), $tags));
         self::register($block, [$id]);
 
         GlobalBlockStateHandlers::getDeserializer()->map($id,
@@ -866,7 +866,7 @@ final class BlockStateRegistration
     public static function TrialSpawner(): void
     {
         $id = BlockTypeNames::TRIAL_SPAWNER;
-        $block = new TrialSpawner(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::class), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant()));
+        $block = new TrialSpawner(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::$CLASS), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant()));
         self::register($block, [$id]);
 
         GlobalBlockStateHandlers::getDeserializer()->map($id,
@@ -911,7 +911,7 @@ final class BlockStateRegistration
     public static function Vault(): void
     {
         $id = BlockTypeNames::VAULT;
-        $block = new Vault(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::class), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::indestructible()));
+        $block = new Vault(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::$CLASS), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::indestructible()));
         self::register($block, [$id]);
 
         GlobalBlockStateHandlers::getDeserializer()->map($id,
