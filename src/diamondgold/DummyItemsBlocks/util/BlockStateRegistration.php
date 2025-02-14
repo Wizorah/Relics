@@ -825,19 +825,6 @@ final class BlockStateRegistration
         $id = BlockTypeNames::STRUCTURE_VOID;
         $block = new StructureVoid(new BlockIdentifier(BlockTypeIds::newId()), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::indestructible()));
         self::register($block, [$id]);
-
-        GlobalBlockStateHandlers::getDeserializer()->map($id,
-            fn(Reader $reader): StructureVoid => (clone $block)
-                ->setType(match ($reader->readString(BlockStateNames::STRUCTURE_VOID_TYPE)) {
-                    BlockStateStringValues::STRUCTURE_VOID_TYPE_VOID => StructureVoidType::VOID,
-                    BlockStateStringValues::STRUCTURE_VOID_TYPE_AIR => StructureVoidType::AIR,
-                    default => throw $reader->badValueException(BlockStateNames::STRUCTURE_VOID_TYPE, $reader->readString(BlockStateNames::STRUCTURE_VOID_TYPE))
-                })
-        );
-        GlobalBlockStateHandlers::getSerializer()->map($block,
-            fn(StructureVoid $block) => Writer::create($id)
-                ->writeString(BlockStateNames::STRUCTURE_VOID_TYPE, strtolower($block->getType()->name))
-        );
     }
 
     public static function SuspiciousFallable(string $id): void
