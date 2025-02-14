@@ -52,7 +52,6 @@ Customizable using the `Main::setCanChangeStatesClosure()` method
 ### Examples of block state changes by right-clicking:
 |      Block      | Sneak-right-click |     Right-click     |
 |:---------------:|:-----------------:|:-------------------:|
-| (Soul) Campfire |    Toggle fire    |     Place item      |
 |     Crafter     | Toggle triggered  |   Toggle crafting   |
 |  Decorated Pot  | Toggle animation  | Place sherd pattern |
 | (Sticky) Piston |         -         |   Toggle extended   |

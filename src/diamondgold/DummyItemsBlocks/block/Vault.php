@@ -29,11 +29,13 @@ final class Vault extends Transparent
     use DummyTileTrait;
 
     private VaultState $state = VaultState::INACTIVE;
+    private bool $ominous = false;
 
     protected function describeBlockOnlyState(RuntimeDataDescriber $w): void
     {
         $this->describeFacing($w);
         $w->enum($this->state);
+        $w->bool($this->ominous);
     }
 
     public function getLightLevel(): int
@@ -49,6 +51,17 @@ final class Vault extends Transparent
     public function setState(VaultState $state): self
     {
         $this->state = $state;
+        return $this;
+    }
+
+    public function isOminous(): bool
+    {
+        return $this->ominous;
+    }
+
+    public function setOminous(bool $ominous): Vault
+    {
+        $this->ominous = $ominous;
         return $this;
     }
 

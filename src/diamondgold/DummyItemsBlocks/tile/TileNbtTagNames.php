@@ -22,9 +22,6 @@ final class TileNbtTagNames
     public const VibrationListener = "VibrationListener";
     public const VibrationListener_event = "event";
     public const VibrationListener_selector = "selector";
-    // Campfire
-    public const Items = "Item%d"; // sprintf
-    public const ItemTime = "ItemTime%d"; // sprintf
     // Conduit
     public const Active = "Active";
     public const Target = "Target";

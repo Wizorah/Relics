@@ -27,10 +27,12 @@ final class TrialSpawner extends Transparent
     use DummyTileTrait;
 
     private int $trial_spawner_state = 0;
+    private bool $ominous = false;
 
     protected function describeBlockOnlyState(RuntimeDataDescriber $w): void
     {
         $w->boundedIntAuto(0, 5, $this->trial_spawner_state);
+        $w->bool($this->ominous);
     }
 
     public function getLightLevel(): int
@@ -47,6 +49,17 @@ final class TrialSpawner extends Transparent
     {
         Utils::checkWithinBounds($trial_spawner_state, 0, 5);
         $this->trial_spawner_state = $trial_spawner_state;
+        return $this;
+    }
+
+    public function isOminous(): bool
+    {
+        return $this->ominous;
+    }
+
+    public function setOminous(bool $ominous): self
+    {
+        $this->ominous = $ominous;
         return $this;
     }
 

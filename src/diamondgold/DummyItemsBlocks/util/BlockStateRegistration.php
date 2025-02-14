@@ -5,14 +5,9 @@ namespace diamondgold\DummyItemsBlocks\util;
 use diamondgold\DummyItemsBlocks\block\BeeHive;
 use diamondgold\DummyItemsBlocks\block\BubbleColumn;
 use diamondgold\DummyItemsBlocks\block\CalibratedSculkSensor;
-use diamondgold\DummyItemsBlocks\block\Campfire;
 use diamondgold\DummyItemsBlocks\block\CherrySapling;
 use diamondgold\DummyItemsBlocks\block\CommandBlock;
 use diamondgold\DummyItemsBlocks\block\Composter;
-use diamondgold\DummyItemsBlocks\block\CopperBulb;
-use diamondgold\DummyItemsBlocks\block\CopperBulbExposed;
-use diamondgold\DummyItemsBlocks\block\CopperBulbOxidized;
-use diamondgold\DummyItemsBlocks\block\CopperBulbWeathered;
 use diamondgold\DummyItemsBlocks\block\Crafter;
 use diamondgold\DummyItemsBlocks\block\DecoratedPot;
 use diamondgold\DummyItemsBlocks\block\Dispenser;
@@ -22,7 +17,6 @@ use diamondgold\DummyItemsBlocks\block\enum\FacingDirection;
 use diamondgold\DummyItemsBlocks\block\enum\Orientation;
 use diamondgold\DummyItemsBlocks\block\enum\SeaGrassType;
 use diamondgold\DummyItemsBlocks\block\enum\StructureBlockType;
-use diamondgold\DummyItemsBlocks\block\enum\StructureVoidType;
 use diamondgold\DummyItemsBlocks\block\enum\TurtleEggCount;
 use diamondgold\DummyItemsBlocks\block\enum\VaultState;
 use diamondgold\DummyItemsBlocks\block\Grindstone;
@@ -80,9 +74,7 @@ use pocketmine\data\bedrock\block\convert\BlockStateDeserializerHelper;
 use pocketmine\data\bedrock\block\convert\BlockStateReader as Reader;
 use pocketmine\data\bedrock\block\convert\BlockStateSerializerHelper;
 use pocketmine\data\bedrock\block\convert\BlockStateWriter as Writer;
-use pocketmine\inventory\CreativeInventory;
 use pocketmine\item\StringToItemParser;
-use pocketmine\utils\AssumptionFailedError;
 use pocketmine\world\format\io\GlobalBlockStateHandlers;
 
 /* @internal */
@@ -95,17 +87,13 @@ final class BlockStateRegistration
     /**
      * @param Block $block
      * @param string[] $stringToItemParserNames
-     * @param bool $addToCreative
      * @return void
      */
-    private static function register(Block $block, array $stringToItemParserNames, bool $addToCreative = true): void
+    private static function register(Block $block, array $stringToItemParserNames): void
     {
         RuntimeBlockStateRegistry::getInstance()->register($block);
         foreach ($stringToItemParserNames as $name) {
             StringToItemParser::getInstance()->registerBlock($name, fn() => clone $block);
-        }
-        if ($addToCreative) {
-            CreativeInventory::getInstance()->add($block->asItem());
         }
     }
 
@@ -140,7 +128,7 @@ final class BlockStateRegistration
     public static function door(string $id): void
     {
         $block = new Door(new BlockIdentifier(BlockTypeIds::newId()), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant()));
-        self::register($block, [$id . '_block'], false);
+        self::register($block, [$id . '_block']);
 
         GlobalBlockStateHandlers::getDeserializer()->map($id,
             fn(Reader $reader): Door => BlockStateDeserializerHelper::decodeDoor(clone $block, $reader)
@@ -219,7 +207,7 @@ final class BlockStateRegistration
 
     public static function sign(string $standingId, string $wallId, FloorSign $floor, WallSign $wall): void
     {
-        self::register($floor, [$standingId], false);
+        self::register($floor, [$standingId]);
 
         GlobalBlockStateHandlers::getDeserializer()->map($standingId,
             fn(Reader $reader): FloorSign => BlockStateDeserializerHelper::decodeFloorSign(clone $floor, $reader)
@@ -228,7 +216,7 @@ final class BlockStateRegistration
             fn(FloorSign $block) => BlockStateSerializerHelper::encodeFloorSign($block, Writer::create($standingId))
         );
 
-        self::register($wall, [$wallId], false);
+        self::register($wall, [$wallId]);
 
         GlobalBlockStateHandlers::getDeserializer()->map($wallId,
             fn(Reader $reader): WallSign => BlockStateDeserializerHelper::decodeWallSign(clone $wall, $reader)
@@ -350,24 +338,6 @@ final class BlockStateRegistration
         );
     }
 
-    // obsolete when merged https://github.com/pmmp/PocketMine-MP/pull/4696
-    public static function Campfire(string $id): void
-    {
-        $block = new Campfire(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::$CLASS), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant()));
-        self::register($block, [$id . '_block'], false);
-
-        GlobalBlockStateHandlers::getDeserializer()->map($id,
-            fn(Reader $reader): Campfire => (clone $block)
-                ->setExtinguished($reader->readBool(BlockStateNames::EXTINGUISHED))
-                ->setFacing($reader->readCardinalHorizontalFacing())
-        );
-        GlobalBlockStateHandlers::getSerializer()->map($block,
-            fn(Campfire $block) => Writer::create($id)
-                ->writeBool(BlockStateNames::EXTINGUISHED, $block->isExtinguished())
-                ->writeCardinalHorizontalFacing($block->getFacing())
-        );
-    }
-
     public static function CherrySapling(): void
     {
         $id = BlockTypeNames::CHERRY_SAPLING;
@@ -415,31 +385,6 @@ final class BlockStateRegistration
         GlobalBlockStateHandlers::getSerializer()->map($block,
             fn(Composter $block) => Writer::create($id)
                 ->writeInt(BlockStateNames::COMPOSTER_FILL_LEVEL, $block->getFillLevel())
-        );
-    }
-
-    public static function CopperBulb(string $id): void
-    {
-        $class = match ($id) {
-            BlockTypeNames::COPPER_BULB, BlockTypeNames::WAXED_COPPER_BULB => CopperBulb::class,
-            BlockTypeNames::EXPOSED_COPPER_BULB, BlockTypeNames::WAXED_EXPOSED_COPPER_BULB => CopperBulbExposed::class,
-            BlockTypeNames::OXIDIZED_COPPER_BULB, BlockTypeNames::WAXED_OXIDIZED_COPPER_BULB => CopperBulbOxidized::class,
-            BlockTypeNames::WEATHERED_COPPER_BULB, BlockTypeNames::WAXED_WEATHERED_COPPER_BULB => CopperBulbWeathered::class,
-            default => throw new AssumptionFailedError("Unmapped copper bulb id: $id")
-        };
-        /** @var CopperBulb $block */
-        $block = new $class(new BlockIdentifier(BlockTypeIds::newId()), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant()));
-        self::register($block, [$id]);
-
-        GlobalBlockStateHandlers::getDeserializer()->map($id,
-            fn(Reader $reader): CopperBulb => (clone $block)
-                ->setLit($reader->readBool(BlockStateNames::LIT))
-                ->setPowered($reader->readBool(BlockStateNames::POWERED_BIT))
-        );
-        GlobalBlockStateHandlers::getSerializer()->map($block,
-            fn(CopperBulb $block) => Writer::create($id)
-                ->writeBool(BlockStateNames::LIT, $block->isLit())
-                ->writeBool(BlockStateNames::POWERED_BIT, $block->isPowered())
         );
     }
 
@@ -532,7 +477,7 @@ final class BlockStateRegistration
     public static function HangingSign(string $id): void
     {
         $block = new HangingSign(new BlockIdentifier(BlockTypeIds::newId(), DummyTile::$CLASS), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant()));
-        self::register($block, [$id . '_block'], false);
+        self::register($block, [$id . '_block']);
 
         GlobalBlockStateHandlers::getDeserializer()->map($id,
             fn(Reader $reader): HangingSign => (clone $block)
@@ -572,7 +517,7 @@ final class BlockStateRegistration
     {
         $id = BlockTypeNames::KELP;
         $block = new Kelp(new BlockIdentifier(BlockTypeIds::newId()), Utils::generateNameFromId($id), new BlockTypeInfo(BlockBreakInfo::instant()));
-        self::register($block, [$id . '_block'], false);
+        self::register($block, [$id . '_block']);
 
         GlobalBlockStateHandlers::getDeserializer()->map($id,
             fn(Reader $reader): Kelp => (clone $block)
@@ -859,10 +804,12 @@ final class BlockStateRegistration
         GlobalBlockStateHandlers::getDeserializer()->map($id,
             fn(Reader $reader): TrialSpawner => (clone $block)
                 ->setState($reader->readInt(BlockStateNames::TRIAL_SPAWNER_STATE))
+                ->setOminous($reader->readBool(BlockStateNames::OMINOUS))
         );
         GlobalBlockStateHandlers::getSerializer()->map($block,
             fn(TrialSpawner $block) => Writer::create($id)
                 ->writeInt(BlockStateNames::TRIAL_SPAWNER_STATE, $block->getState())
+                ->writeBool(BlockStateNames::OMINOUS, $block->isOminous())
         );
     }
 
@@ -911,11 +858,13 @@ final class BlockStateRegistration
                     BlockStateStringValues::VAULT_STATE_EJECTING => VaultState::EJECTING,
                     default => throw $reader->badValueException(BlockStateNames::VAULT_STATE, $reader->readString(BlockStateNames::VAULT_STATE))
                 })
+                ->setOminous($reader->readBool(BlockStateNames::OMINOUS))
         );
         GlobalBlockStateHandlers::getSerializer()->map($block,
             fn(Vault $block) => Writer::create($id)
                 ->writeCardinalHorizontalFacing($block->getFacing())
                 ->writeString(BlockStateNames::VAULT_STATE, strtolower($block->getState()->name))
+                ->writeBool(BlockStateNames::OMINOUS, $block->isOminous())
         );
     }
 }
