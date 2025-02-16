@@ -35,9 +35,10 @@ use pocketmine\data\bedrock\item\ItemTypeDeserializeException;
 use pocketmine\data\bedrock\item\ItemTypeNames;
 use pocketmine\data\bedrock\item\SavedItemData;
 use pocketmine\data\bedrock\PotionTypeIdMap;
+use pocketmine\inventory\CreativeCategory;
+use pocketmine\inventory\CreativeGroup;
 use pocketmine\inventory\CreativeInventory;
 use pocketmine\inventory\json\CreativeGroupData;
-use pocketmine\inventory\json\CreativeItemData;
 use pocketmine\item\Item;
 use pocketmine\item\ItemBlock;
 use pocketmine\item\ItemBlockWallOrFloor;
@@ -47,6 +48,7 @@ use pocketmine\item\PotionType;
 use pocketmine\item\SplashPotion;
 use pocketmine\item\StringToItemParser;
 use pocketmine\item\VanillaItems;
+use pocketmine\lang\Translatable;
 use pocketmine\network\mcpe\convert\TypeConverter;
 use pocketmine\network\mcpe\protocol\ProtocolInfo;
 use pocketmine\player\Player;
@@ -55,9 +57,9 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\scheduler\AsyncTask;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\ConfigLoadException;
-use pocketmine\utils\Filesystem;
 use pocketmine\world\format\io\GlobalBlockStateHandlers;
 use pocketmine\world\format\io\GlobalItemDataHandlers;
+use Symfony\Component\Filesystem\Path;
 use Throwable;
 use function defined;
 
@@ -214,6 +216,7 @@ final class Main extends PluginBase
             $config->save();
         }
 
+        CreativeInventory::getInstance();
         $this->getLogger()->debug("Registering " . count($blocks) . " blocks and " . count($items) . " items");
 
         $blocksWithoutSpecial = $blocks;
@@ -293,30 +296,38 @@ final class Main extends PluginBase
         // pro: no need to add items manually
         // con: likely incompatible with other plugins that remove items from creative inventory
 
-        $creativeData = json_decode(Filesystem::fileGetContents(BedrockDataFiles::CREATIVEITEMS_JSON));
-        $mapper = new \JsonMapper();
-        $mapper->bStrictObjectTypeChecking = true;
-        $mapper->bExceptionOnUndefinedProperty = true;
-        $mapper->bExceptionOnMissingData = true;
-        $groups = CraftingManagerFromDataHelper::loadJsonObjectListIntoModel($mapper, CreativeGroupData::class, $creativeData->groups);
-        $validateGroup = function ($group_id) use ($groups) : void{
-            if ($groups[$group_id]->icon === null) {
-                return;
+        $existingGroups = [];
+        foreach (CreativeInventory::getInstance()->getAllEntries() as $entry) {
+            if ($entry->getGroup() != null) {
+                $existingGroups[$entry->getGroup()->getName()->getText()] = $entry->getGroup();
             }
-            /** @var CreativeGroupData $group */
-            $group = (new \ReflectionProperty(CreativeInventory::class, "groups"))->getValue(CreativeInventory::getInstance())[$group_id];
-            if ($group->icon !== null) {
-                return;
+        }
+
+        foreach ([
+                    "construction" => CreativeCategory::CONSTRUCTION,
+                    "nature" => CreativeCategory::NATURE,
+                    "equipment" => CreativeCategory::EQUIPMENT,
+                    "items" => CreativeCategory::ITEMS,
+                ] as $categoryId => $categoryEnum) {
+            $groups = CraftingManagerFromDataHelper::loadJsonArrayOfObjectsFile(
+                Path::join(BedrockDataFiles::CREATIVE, $categoryId . ".json"),
+                CreativeGroupData::class
+            );
+
+            foreach ($groups as $groupData) {
+                $icon = $groupData->group_icon === null ? null : CraftingManagerFromDataHelper::deserializeItemStack($groupData->group_icon);
+
+                $group = $icon === null ? null : $existingGroups[$groupData->group_name] ?? new CreativeGroup(
+                    new Translatable($groupData->group_name),
+                    $icon
+                );
+
+                foreach (array_filter(array_map(static fn($itemStack) => CraftingManagerFromDataHelper::deserializeItemStack($itemStack), $groupData->items)) as $item) {
+                    if (!CreativeInventory::getInstance()->contains($item)) {//TODO: fix item order
+                        CreativeInventory::getInstance()->add($item, $categoryEnum, $group);
+                    }
+                }
             }
-            $group->icon = CraftingManagerFromDataHelper::deserializeItemStack($groups[$group_id]->icon);
-        };
-        foreach (CraftingManagerFromDataHelper::loadJsonObjectListIntoModel($mapper, CreativeItemData::class, $creativeData->items) as $data) {
-            $item = CraftingManagerFromDataHelper::deserializeItemStack($data->item);
-            if ($item === null || CreativeInventory::getInstance()->getItemIndex($item) !== -1) {
-                continue;
-            }
-            CreativeInventory::getInstance()->add($item, $data->group_id);
-            $validateGroup($data->group_id);
         }
 
         $blocksSerialized = igbinary_serialize($blocks);
