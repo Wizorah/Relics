@@ -60,35 +60,52 @@ use pocketmine\world\format\io\GlobalBlockStateHandlers;
 use pocketmine\world\format\io\GlobalItemDataHandlers;
 use Throwable;
 
+/**
+ * Classe principale du plugin DummyItemsBlocks.
+ * Gère l'enregistrement des items et blocks spéciaux, ainsi que la configuration.
+ */
 final class Main extends PluginBase
 {
-    /** @var Closure(Block, ?Player): bool */
+    /**
+     * Closure permettant de vérifier si un joueur peut changer l'état d'un block.
+     *
+     * @var Closure(Block, ?Player): bool
+     */
     private static Closure $canChangeBlockStatesClosure;
 
+    /**
+     * Méthode appelée lors du chargement du plugin.
+     * Initialise la closure de changement d'état des blocks.
+     */
     protected function onLoad(): void
     {
-        self::setCanChangeStatesClosure(function (Block $block, ?Player $player): bool {
-            if ($player === null) {
-                return false;
+        self::setCanChangeStatesClosure(
+            function (Block $block, ?Player $player): bool {
+                if ($player === null) {
+                    return false;
+                }
+                static $antiSpam = [];
+                if (($antiSpam[$player->getId()] ?? 0) > microtime(true)) {
+                    return false;
+                }
+                $antiSpam[$player->getId()] = microtime(true) + 0.2;
+                static $item = null;
+                if ($item === null) {
+                    $item = VanillaItems::ARROW()->setCustomName("Change State");
+                }
+                return $player->isCreative(true)
+                    && $player->hasPermission("dummyitemsblocks.changestate")
+                    && ($player->getInventory()->getItemInHand()->equals($item)
+                        || $player->getOffHandInventory()->getItem(0)->equals($item));
             }
-            static $antiSpam = [];
-            if (($antiSpam[$player->getId()] ?? 0) > microtime(true)) {
-                return false;
-            }
-            $antiSpam[$player->getId()] = microtime(true) + 0.2;
-            static $item = null;
-            if ($item === null) {
-                $item = VanillaItems::ARROW()->setCustomName("Change State"); // give player arrow 1 {display:{Name:"Change State"}}
-            }
-            return
-                $player->isCreative(true) &&
-                $player->hasPermission("dummyitemsblocks.changestate") &&
-                ($player->getInventory()->getItemInHand()->equals($item) || $player->getOffHandInventory()->getItem(0)->equals($item));
-        });
+        );
     }
 
     /**
+     * Définit la closure de vérification de changement d'état des blocks.
+     *
      * @param Closure(Block, ?Player): bool $closure
+     * @return void
      */
     public static function setCanChangeStatesClosure(Closure $closure): void
     {
@@ -96,6 +113,13 @@ final class Main extends PluginBase
         self::$canChangeBlockStatesClosure = $closure;
     }
 
+    /**
+     * Vérifie si un joueur peut changer l'état d'un block.
+     *
+     * @param Block $block
+     * @param Player|null $player
+     * @return bool
+     */
     public static function canChangeBlockStates(Block $block, ?Player $player): bool
     {
         return (self::$canChangeBlockStatesClosure)($block, $player);
@@ -227,7 +251,7 @@ final class Main extends PluginBase
 
         $this->registerDummyTiles($blocks);
 
-        // Server will crash if it tries to send these items to the client
+        // Servers will crash if it tries to send these items to the client
         // These ItemBlocks require block state data when registering
         $changed = false;
         /** @var string $alias */
@@ -285,7 +309,7 @@ final class Main extends PluginBase
             $config->set("items", $items);
             $config->set("blocks", $blocks);
             $config->save();
-            $this->getLogger()->emergency("Server restart required to remove unsupported items");
+            $this->getLogger()->emergency("Servers restart required to remove unsupported items");
             throw new DisablePluginException();
         }
         /*
@@ -780,13 +804,23 @@ final class Main extends PluginBase
                 StringToItemParser::getInstance()->register($name[0] . ':' . $type->name . '_' . $name[1], fn() => clone $horn);
             }
         }
-        // im too lazy to list all the items with compound tag data, easier to just reload ;P
-        $creativeItems = CraftingManagerFromDataHelper::loadJsonArrayOfObjectsFile(
-            BedrockDataFiles::CREATIVEITEMS_JSON,
-            ItemStackData::class
-        );
-        // bare minimum code needed for non-functional item adapted from https://github.com/pmmp/PocketMine-MP/pull/5455
-        // obsolete when merged
+        $creativeDir = BedrockDataFiles::CREATIVE;
+        $creativeItems = [];
+
+        foreach (scandir($creativeDir) as $file) {
+            if (pathinfo($file, PATHINFO_EXTENSION) === 'json') {
+                $path = $creativeDir . '/' . $file;
+                $jsonData = json_decode(file_get_contents($path), true);
+
+                if (isset($jsonData["items"])) {
+                    foreach ($jsonData["items"] as $item) {
+                        if (isset($item["id"])) {
+                            $creativeItems[] = $item;
+                        }
+                    }
+                }
+            }
+        }
         $id = ItemTypeNames::FIREWORK_STAR;
         if (Utils::removeIfPresent($id, $items)) {
             $item = new FireworkStar(new ItemIdentifier(ItemTypeIds::newId()), Utils::generateNameFromId($id));
@@ -957,3 +991,4 @@ final class Main extends PluginBase
         TileFactory::getInstance()->register(DummyTile::class, array_keys($tiles));
     }
 }
+
